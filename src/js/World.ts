@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import 'three/examples/js/controls/PointerLockControls';
 import RandomGenerator from './RandomGenerator';
+import Cube from './Cube';
 
 const viewDistance = 750;
 const fov = 60;
@@ -22,6 +23,8 @@ export default class World {
     mouse: any;
 
     speed: number = 100;
+
+    cubes: Cube[][][] = [];
 
     constructor() {
         this.scene = new THREE.Scene();
@@ -57,7 +60,8 @@ export default class World {
     initCamera() {
         this.controls = new THREE.PointerLockControls(this.camera);
         this.controls.getObject().position.y = 100;
-        this.controls.getObject().position.z = 200;
+        this.controls.getObject().position.z = -50;
+        this.controls.getObject().rotation.y = Math.PI;
 
         this.scene.add(this.controls.getObject());
 
@@ -108,6 +112,8 @@ export default class World {
         this.moveCamera();
         this.checkRaycaster();
 
+        this.setPlayerHeight();
+
         this.renderer.render(this.scene, this.camera);
     }
 
@@ -135,14 +141,40 @@ export default class World {
     checkRaycaster() {
         this.raycaster.setFromCamera(this.mouse, this.camera);
 
-        let intersects = this.raycaster.intersectObjects(this.scene.children);
+        // let intersects = this.raycaster.intersectObjects(this.scene.children);
+        // for (let i = 0; i < intersects.length; i++) {
+            // let obj = intersects[i].object;
+        // }
+    }
 
-        for (let i = 0; i < intersects.length; i++) {
-            let obj = intersects[i].object;
-        }
+    setPlayerHeight() {
+        const height = this.getHighestY() * Cube.SIZE;
+
+        this.controls.getObject().position.y = height + (Cube.SIZE);
     }
 
     generate() {
         this.generator.generate(this);
+    }
+
+    getCurrentCoord(): THREE.Vector3 {
+        let position = new THREE.Vector3().copy(this.controls.getObject().position);
+        position.divideScalar(Cube.SIZE);
+        position.ceil();
+
+        return position;
+    }
+
+    getHighestY(): number {
+        const position: THREE.Vector3 = this.getCurrentCoord();
+
+        let maxHeight: number = 0;
+        this.cubes.forEach((y: Cube[][], height: number) => {
+            if (y[position.x] && y[position.x][position.z]) {
+                maxHeight = height + 1;
+            }
+        });
+
+        return maxHeight;
     }
 }

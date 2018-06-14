@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 export default class Cube {
 
-    static SIZE = 30;
+    static SIZE = 3;
 
     object: any;
 

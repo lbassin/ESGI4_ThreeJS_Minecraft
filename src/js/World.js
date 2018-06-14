@@ -16,8 +16,6 @@ export default class World {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.BasicShadowMap;
-
-        this.keys = {};
     }
 
     init() {
@@ -33,6 +31,8 @@ export default class World {
 
         this.initCamera();
         this.initKeyboard();
+        this.initMouse();
+        this.initRaycaster();
 
         // Debug
         this.addFloor();
@@ -59,29 +59,51 @@ export default class World {
         }, false);
     }
 
+    initMouse() {
+        this.mouse = new THREE.Vector2();
+
+        window.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+    }
+
     initKeyboard() {
+        this.keys = {};
+
         document.onkeydown = (e) => {
             e = e || window.event;
             this.keys[e.keyCode] = true;
         };
 
-        document.onkeyup =  (e) => {
+        document.onkeyup = (e) => {
             e = e || window.event;
             this.keys[e.keyCode] = false;
         };
     }
 
+    initRaycaster() {
+        this.raycaster = new THREE.Raycaster();
+    }
+
+    onMouseMove() {
+        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        this.mouse.y = (event.clientY / window.innerHeight) * 2 - 1;
+    }
+
     animate() {
         requestAnimationFrame(this.animate.bind(this));
-
         this.moveCamera();
+
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        let intersects = this.raycaster.intersectObjects(this.scene.children);
+        for (let i = 0; i < intersects.length; i++) {
+            // intersects[i].object.material.color.set(0xff0000);
+        }
 
         this.renderer.render(this.scene, this.camera);
     }
 
     moveCamera() {
         let delta = clock.getDelta();
-        let speed = 10;
+        let speed = 20;
 
         // up
         if (this.keys[38]) {

@@ -17,8 +17,17 @@ module.exports = (env = {}) => {
         performance: {
             hints: false
         },
+        resolve: {
+            extensions: [".ts", ".js"]
+        },
         module: {
-            rules: [{
+            rules: [
+                {
+                    // All files with a '.ts' extension will be handled by ts-loader
+                    test: /\.ts$/,
+                    use: 'ts-loader',
+                    exclude: /node_modules/
+                }, {
                     test: /\.js$/,
                     exclude: /node_modules/,
                     use: {

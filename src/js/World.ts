@@ -1,12 +1,26 @@
 import * as THREE from "three";
 import 'three/examples/js/controls/PointerLockControls';
-import Cube from "./Cube";
+import RandomGenerator from './RandomGenerator';
 
 const viewDistance = 1000;
 const fov = 60;
 const clock = new THREE.Clock();
 
 export default class World {
+
+    scene: any;
+    camera: any;
+    renderer: any;
+    generator: any;
+    controls: any;
+
+    ambientLight: any;
+
+    keys: any;
+
+    raycaster: any;
+    mouse: any;
+
 
     constructor() {
         this.scene = new THREE.Scene();
@@ -16,6 +30,8 @@ export default class World {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.BasicShadowMap;
+
+        this.generator = new RandomGenerator();
     }
 
     init() {
@@ -29,24 +45,24 @@ export default class World {
         this.ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         this.scene.add(this.ambientLight);
 
+        this.generate();
+
         this.initCamera();
         this.initKeyboard();
         this.initMouse();
         this.initRaycaster();
-
-        // Debug
-        this.addFloor();
-        this.addCube();
-        // / Debug
     }
 
     initCamera() {
         this.controls = new THREE.PointerLockControls(this.camera);
+        this.controls.getObject().position.y = 200;
+        this.controls.getObject().position.z = -200;
+        this.controls.getObject().rotation.y = Math.PI;
+        this.controls.getObject().rotation.x = Math.PI / 6;
+
         this.scene.add(this.controls.getObject());
 
-        // pointer lock
         let element = document.body;
-
         let pointerlockchange = () => {
             this.controls.enabled = document.pointerLockElement === element;
         };
@@ -54,7 +70,6 @@ export default class World {
         document.addEventListener('pointerlockchange', pointerlockchange, false);
 
         element.addEventListener('click', function () {
-            element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
             element.requestPointerLock();
         }, false);
     }
@@ -68,12 +83,12 @@ export default class World {
     initKeyboard() {
         this.keys = {};
 
-        document.onkeydown = (e) => {
+        document.onkeydown = (e: any) => {
             e = e || window.event;
             this.keys[e.keyCode] = true;
         };
 
-        document.onkeyup = (e) => {
+        document.onkeyup = (e: any) => {
             e = e || window.event;
             this.keys[e.keyCode] = false;
         };
@@ -83,20 +98,16 @@ export default class World {
         this.raycaster = new THREE.Raycaster();
     }
 
-    onMouseMove() {
+    onMouseMove(event: any) {
         this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         this.mouse.y = (event.clientY / window.innerHeight) * 2 - 1;
     }
 
     animate() {
         requestAnimationFrame(this.animate.bind(this));
-        this.moveCamera();
 
-        this.raycaster.setFromCamera(this.mouse, this.camera);
-        let intersects = this.raycaster.intersectObjects(this.scene.children);
-        for (let i = 0; i < intersects.length; i++) {
-            // intersects[i].object.material.color.set(0xff0000);
-        }
+        this.moveCamera();
+        this.checkRaycaster();
 
         this.renderer.render(this.scene, this.camera);
     }
@@ -123,30 +134,17 @@ export default class World {
         }
     }
 
-    addFloor() {
-        const floor = new THREE.Mesh(
-            new THREE.PlaneGeometry(100, 100, 100, 100),
-            new THREE.MeshPhongMaterial({color: 0Xffffff})
-        );
+    checkRaycaster() {
+        this.raycaster.setFromCamera(this.mouse, this.camera);
 
-        floor.rotation.x = -Math.PI / 2;
-        floor.receiveShadow = true;
+        let intersects = this.raycaster.intersectObjects(this.scene.children);
 
-        this.scene.add(floor);
-
-
-        const light = new THREE.PointLight(0xffffff, 0.8, 180);
-        light.position.set(20, 60, 0);
-        light.castShadow = true;
-        light.shadow.camera.near = 1;
-        light.shadow.camera.far = 250;
-
-        this.scene.add(light);
+        for (let i = 0; i < intersects.length; i++) {
+            // intersects[i].object.material.color.set(0xff0000);
+        }
     }
 
-    addCube() {
-        const cube = new Cube();
-
-        this.scene.add(cube.getObject());
+    generate() {
+        this.generator.generate(this);
     }
 }

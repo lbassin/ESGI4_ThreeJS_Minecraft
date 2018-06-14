@@ -2,7 +2,7 @@ import * as THREE from "three";
 import 'three/examples/js/controls/PointerLockControls';
 import RandomGenerator from './RandomGenerator';
 
-const viewDistance = 1000;
+const viewDistance = 750;
 const fov = 60;
 const clock = new THREE.Clock();
 
@@ -21,6 +21,7 @@ export default class World {
     raycaster: any;
     mouse: any;
 
+    speed: number = 100;
 
     constructor() {
         this.scene = new THREE.Scene();
@@ -42,7 +43,7 @@ export default class World {
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         }, false);
 
-        this.ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        this.ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         this.scene.add(this.ambientLight);
 
         this.generate();
@@ -55,10 +56,8 @@ export default class World {
 
     initCamera() {
         this.controls = new THREE.PointerLockControls(this.camera);
-        this.controls.getObject().position.y = 200;
-        this.controls.getObject().position.z = -200;
-        this.controls.getObject().rotation.y = Math.PI;
-        this.controls.getObject().rotation.x = Math.PI / 6;
+        this.controls.getObject().position.y = 100;
+        this.controls.getObject().position.z = 200;
 
         this.scene.add(this.controls.getObject());
 
@@ -114,23 +113,22 @@ export default class World {
 
     moveCamera() {
         let delta = clock.getDelta();
-        let speed = 20;
 
         // up
         if (this.keys[38]) {
-            this.controls.getObject().translateZ(-delta * speed);
+            this.controls.getObject().translateZ(-delta * this.speed);
         }
         // down
         if (this.keys[40]) {
-            this.controls.getObject().translateZ(delta * speed);
+            this.controls.getObject().translateZ(delta * this.speed);
         }
         // left
         if (this.keys[37]) {
-            this.controls.getObject().translateX(-delta * speed);
+            this.controls.getObject().translateX(-delta * this.speed);
         }
         // right
         if (this.keys[39]) {
-            this.controls.getObject().translateX(delta * speed);
+            this.controls.getObject().translateX(delta * this.speed);
         }
     }
 
@@ -140,7 +138,7 @@ export default class World {
         let intersects = this.raycaster.intersectObjects(this.scene.children);
 
         for (let i = 0; i < intersects.length; i++) {
-            // intersects[i].object.material.color.set(0xff0000);
+            let obj = intersects[i].object;
         }
     }
 

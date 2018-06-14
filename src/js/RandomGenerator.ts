@@ -5,12 +5,17 @@ export default class RandomGenerator {
 
     scene: any;
 
+    sizeX = 30;
+    sizeY = 30;
+
     generate(world) {
         this.scene = world.scene;
 
-        for(let i = 0; i < 20; i++){
-            const position = new THREE.Vector3(Cube.SIZE * i, 0, 0);
-            this.addCube(position);
+        for (let i = 0; i < this.sizeX; i++) {
+            for (let e = 0; e < this.sizeY; e++) {
+                const position = new THREE.Vector3(Cube.SIZE * i, 0, Cube.SIZE * e);
+                this.addCube(position);
+            }
         }
     }
 

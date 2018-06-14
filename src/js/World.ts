@@ -2,6 +2,7 @@ import * as THREE from "three";
 import 'three/examples/js/controls/PointerLockControls';
 import RandomGenerator from './RandomGenerator';
 import Cube from './Cube';
+import * as Stats from 'stats.js';
 
 const viewDistance = 750;
 const fov = 60;
@@ -26,6 +27,8 @@ export default class World {
 
     cubes: Cube[][][] = [];
 
+    stats: any;
+
     constructor() {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 1, viewDistance);
@@ -36,10 +39,13 @@ export default class World {
         this.renderer.shadowMap.type = THREE.BasicShadowMap;
 
         this.generator = new RandomGenerator();
+
+        this.stats = new Stats();
     }
 
     init() {
         document.body.appendChild(this.renderer.domElement);
+        document.body.appendChild(this.stats.dom);
         window.addEventListener('resize', () => {
             this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
@@ -107,7 +113,7 @@ export default class World {
     }
 
     animate() {
-        requestAnimationFrame(this.animate.bind(this));
+        this.stats.begin();
 
         this.moveCamera();
         this.checkRaycaster();
@@ -115,6 +121,8 @@ export default class World {
         this.setPlayerHeight();
 
         this.renderer.render(this.scene, this.camera);
+        this.stats.end();
+        requestAnimationFrame(this.animate.bind(this));
     }
 
     moveCamera() {
@@ -143,7 +151,7 @@ export default class World {
 
         // let intersects = this.raycaster.intersectObjects(this.scene.children);
         // for (let i = 0; i < intersects.length; i++) {
-            // let obj = intersects[i].object;
+        // let obj = intersects[i].object;
         // }
     }
 

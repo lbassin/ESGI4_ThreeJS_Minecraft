@@ -7,6 +7,7 @@ import * as Stats from 'stats.js';
 const viewDistance = 750;
 const fov = 60;
 const clock = new THREE.Clock();
+const raycasterFar = 12;
 
 export default class World {
 
@@ -15,17 +16,13 @@ export default class World {
     renderer: any;
     generator: any;
     controls: any;
-
     ambientLight: any;
-
     keys: any;
-
     raycaster: any;
-    mouse: any;
-
     speed: number = 100;
-
     cubes: Cube[][][] = [];
+
+    selectedCube: THREE.Mesh = null;
 
     stats: any;
 
@@ -83,12 +80,6 @@ export default class World {
         }, false);
     }
 
-    initMouse() {
-        this.mouse = new THREE.Vector2();
-
-        window.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-    }
-
     initKeyboard() {
         this.keys = {};
 
@@ -103,13 +94,21 @@ export default class World {
         };
     }
 
-    initRaycaster() {
-        this.raycaster = new THREE.Raycaster();
+    initMouse() {
+        document.onmousedown = (e: any) => {
+            if (e.button === 0) {
+                this.removeSelectedCube();
+            }
+
+            if (e.button === 1) {
+                this.addSelectedCube();
+            }
+        }
     }
 
-    onMouseMove(event: any) {
-        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        this.mouse.y = (event.clientY / window.innerHeight) * 2 - 1;
+    initRaycaster() {
+        this.raycaster = new THREE.Raycaster();
+        this.raycaster.far = raycasterFar;
     }
 
     animate() {
@@ -147,12 +146,12 @@ export default class World {
     }
 
     checkRaycaster() {
-        this.raycaster.setFromCamera(this.mouse, this.camera);
+        this.raycaster.setFromCamera(new THREE.Vector3(), this.camera);
 
-        // let intersects = this.raycaster.intersectObjects(this.scene.children);
-        // for (let i = 0; i < intersects.length; i++) {
-        // let obj = intersects[i].object;
-        // }
+        let intersects = this.raycaster.intersectObjects(this.scene.children);
+        if (intersects.length > 0) {
+            this.selectedCube = intersects[0].object;
+        }
     }
 
     setPlayerHeight() {
@@ -167,10 +166,8 @@ export default class World {
 
     getCurrentCoord(): THREE.Vector3 {
         let position = new THREE.Vector3().copy(this.controls.getObject().position);
-        position.divideScalar(Cube.SIZE);
-        position.ceil();
 
-        return position;
+        return World.convertSizeToCoord(position);
     }
 
     getHighestY(): number {
@@ -184,5 +181,29 @@ export default class World {
         });
 
         return maxHeight;
+    }
+
+    removeSelectedCube(): void {
+        if (!this.selectedCube) {
+            return;
+        }
+
+        const position = World.convertSizeToCoord(this.selectedCube.position);
+
+        this.scene.remove(this.selectedCube);
+        this.selectedCube = null;
+
+        this.cubes[position.y][position.x][position.z] = null;
+    }
+
+    addSelectedCube(): void {
+
+    }
+
+    static convertSizeToCoord(position: THREE.Vector3): THREE.Vector3 {
+        position.divideScalar(Cube.SIZE);
+        position.ceil();
+
+        return position;
     }
 }

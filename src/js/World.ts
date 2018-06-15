@@ -1,13 +1,13 @@
 import * as THREE from "three";
 import 'three/examples/js/controls/PointerLockControls';
-import RandomGenerator from './RandomGenerator';
 import Cube from './Cube';
 import * as Stats from 'stats.js';
+import FlatGenerator from './FlatGenerator';
 
-const viewDistance = 750;
+const viewDistance = 100;
 const fov = 60;
 const clock = new THREE.Clock();
-const raycasterFar = 12;
+const raycasterFar = 15;
 
 export default class World {
 
@@ -28,6 +28,9 @@ export default class World {
 
     constructor() {
         this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x9fe4fb);
+        this.scene.fog = new THREE.Fog(0x9fe4fb, viewDistance / 4, viewDistance - 10);
+
         this.camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 1, viewDistance);
         this.renderer = new THREE.WebGLRenderer({antialias: true});
 
@@ -35,7 +38,7 @@ export default class World {
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.BasicShadowMap;
 
-        this.generator = new RandomGenerator();
+        this.generator = new FlatGenerator();
 
         this.stats = new Stats();
     }
@@ -49,7 +52,7 @@ export default class World {
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         }, false);
 
-        this.ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        this.ambientLight = new THREE.HemisphereLight(0xffffff, 0xff0000, 0.8);
         this.scene.add(this.ambientLight);
 
         this.generate();
@@ -150,14 +153,28 @@ export default class World {
 
         let intersects = this.raycaster.intersectObjects(this.scene.children);
         if (intersects.length > 0) {
-            this.selectedCube = intersects[0].object;
+            this.setSelectedCube(intersects[0].object);
+        } else {
+            this.setSelectedCube(null);
+        }
+    }
+
+    setSelectedCube(cube: THREE.Mesh) {
+        if (this.selectedCube != null) {
+            this.selectedCube.material.color.set(Cube.DefaultColor);
+        }
+
+        this.selectedCube = cube;
+
+        if (this.selectedCube != null) {
+            this.selectedCube.material.color.set(Cube.SelectedColor);
         }
     }
 
     setPlayerHeight() {
         const height = this.getHighestY() * Cube.SIZE;
 
-        this.controls.getObject().position.y = height + (Cube.SIZE);
+        this.controls.getObject().position.y = height + (Cube.SIZE * 2);
     }
 
     generate() {

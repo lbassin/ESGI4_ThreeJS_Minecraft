@@ -23,6 +23,7 @@ export default class World {
     cubes: Cube[][][] = [];
 
     selectedCube: THREE.Mesh = null;
+    selectedCubeDisplayed: any;
 
     stats: any;
 
@@ -52,7 +53,7 @@ export default class World {
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         }, false);
 
-        this.ambientLight = new THREE.HemisphereLight(0xffffff, 0xff0000, 0.8);
+        this.ambientLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.8);
         this.scene.add(this.ambientLight);
 
         this.generate();
@@ -160,15 +161,15 @@ export default class World {
     }
 
     setSelectedCube(cube: THREE.Mesh) {
-        if (this.selectedCube != null) {
-            this.selectedCube.material.color.set(Cube.DefaultColor);
+        if (cube) {
+            cube.material = Cube.SelectedMaterial;
+        }
+
+        if (this.selectedCube && this.selectedCube !== cube) {
+            this.selectedCube.material = Cube.DefaultMaterial;
         }
 
         this.selectedCube = cube;
-
-        if (this.selectedCube != null) {
-            this.selectedCube.material.color.set(Cube.SelectedColor);
-        }
     }
 
     setPlayerHeight() {

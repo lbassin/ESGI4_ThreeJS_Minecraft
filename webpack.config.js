@@ -18,7 +18,7 @@ module.exports = (env = {}) => {
             hints: false
         },
         resolve: {
-            extensions: [".ts", ".js"]
+            extensions: [".ts", ".js", ".png"]
         },
         module: {
             rules: [

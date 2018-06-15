@@ -7,7 +7,7 @@ import FlatGenerator from './FlatGenerator';
 const viewDistance = 100;
 const fov = 60;
 const clock = new THREE.Clock();
-const raycasterFar = 15;
+const raycasterFar = 13;
 
 export default class World {
 
@@ -22,8 +22,11 @@ export default class World {
     speed: number = 100;
     cubes: Cube[][][] = [];
 
+    removeAction: boolean = true;
+
     selectedCube: THREE.Mesh = null;
-    selectedCubeDisplayed: any;
+    selectedFace: number = null;
+    previewNewCube: THREE.Mesh = null;
 
     stats: any;
 
@@ -56,6 +59,9 @@ export default class World {
         this.ambientLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.8);
         this.scene.add(this.ambientLight);
 
+        this.selectedCube = new Cube(new THREE.Vector3(0, -Cube.Size, 0)).select().getObject();
+        this.scene.add(this.selectedCube);
+
         this.generate();
 
         this.initCamera();
@@ -67,7 +73,7 @@ export default class World {
     initCamera() {
         this.controls = new THREE.PointerLockControls(this.camera);
         this.controls.getObject().position.y = 100;
-        this.controls.getObject().position.z = -50;
+        this.controls.getObject().position.z = -20;
         this.controls.getObject().rotation.y = Math.PI;
 
         this.scene.add(this.controls.getObject());
@@ -89,6 +95,11 @@ export default class World {
 
         document.onkeydown = (e: any) => {
             e = e || window.event;
+
+            if (e.keyCode === 17) {
+                this.changeAction();
+            }
+
             this.keys[e.keyCode] = true;
         };
 
@@ -100,11 +111,13 @@ export default class World {
 
     initMouse() {
         document.onmousedown = (e: any) => {
-            if (e.button === 0) {
-                this.removeSelectedCube();
+            if (e.button !== 0) {
+                return;
             }
 
-            if (e.button === 1) {
+            if (this.removeAction) {
+                this.removeSelectedCube();
+            } else {
                 this.addSelectedCube();
             }
         }
@@ -154,28 +167,71 @@ export default class World {
 
         let intersects = this.raycaster.intersectObjects(this.scene.children);
         if (intersects.length > 0) {
-            this.setSelectedCube(intersects[0].object);
+            let selected = intersects[0];
+            this.setSelectedCube(selected.object, selected.faceIndex);
         } else {
-            this.setSelectedCube(null);
+            this.setSelectedCube(null, -1);
         }
     }
 
-    setSelectedCube(cube: THREE.Mesh) {
-        if (cube) {
-            cube.material = Cube.SelectedMaterial;
+    setSelectedCube(cube: THREE.Mesh, faceIndex: number) {
+        if (!cube) {
+            this.selectedCube.visible = false;
+            return;
         }
 
-        if (this.selectedCube && this.selectedCube !== cube) {
-            this.selectedCube.material = Cube.DefaultMaterial;
+        this.selectedFace = faceIndex;
+
+        this.selectedCube.visible = true;
+        this.selectedCube.position.copy(cube.position);
+
+        if (this.removeAction || cube.uuid === this.selectedCube.uuid) {
+            return;
         }
 
-        this.selectedCube = cube;
+        if (this.selectedFace == 0 || this.selectedFace == 1) {
+            this.selectedCube.position.x += Cube.Size;
+        }
+
+        if (this.selectedFace == 2 || this.selectedFace == 3) {
+            this.selectedCube.position.x -= Cube.Size;
+        }
+
+        if (this.selectedFace == 4 || this.selectedFace == 5) {
+            this.selectedCube.position.y += Cube.Size;
+        }
+
+        if (this.selectedFace == 6 || this.selectedFace == 7) {
+            this.selectedCube.position.y -= Cube.Size;
+        }
+
+        if (this.selectedFace == 8 || this.selectedFace == 9) {
+            this.selectedCube.position.z += Cube.Size;
+        }
+
+        if (this.selectedFace == 10 || this.selectedFace == 11) {
+            this.selectedCube.position.z -= Cube.Size;
+        }
     }
+
+    // updatePreviewNewCubePosition(): void {
+    //     if (!this.selectedCube) {
+    //         return;
+    //     }
+    //
+    //     this.previewNewCube.position.copy(this.selectedCube.position);
+    //     if (this.selectedFace == 4 || this.selectedFace == 5) {
+    //         this.previewNewCube.position.y += Cube.Size;
+    //     }
+    //     if (this.selectedFace == 2 || this.selectedFace == 3) {
+    //         this.previewNewCube.position.x += Cube.Size;
+    //     }
+    // }
 
     setPlayerHeight() {
-        const height = this.getHighestY() * Cube.SIZE;
+        const height = this.getHighestY() * Cube.Size;
 
-        this.controls.getObject().position.y = height + (Cube.SIZE * 2);
+        this.controls.getObject().position.y = height + (Cube.Size * 2);
     }
 
     generate() {
@@ -202,26 +258,37 @@ export default class World {
     }
 
     removeSelectedCube(): void {
-        if (!this.selectedCube) {
+        if (!this.selectedCube.visible) {
             return;
         }
 
         const position = World.convertSizeToCoord(this.selectedCube.position);
-
-        this.scene.remove(this.selectedCube);
-        this.selectedCube = null;
+        this.scene.remove(this.cubes[position.y][position.x][position.z].getObject());
 
         this.cubes[position.y][position.x][position.z] = null;
     }
 
     addSelectedCube(): void {
+        const cube = new Cube(this.selectedCube.position);
+        const position = World.convertSizeToCoord(this.selectedCube.position);
+
+        this.scene.add(cube.getObject());
+
+        this.cubes[position.y][position.x][position.z] = cube;
 
     }
 
+    changeAction(): void {
+        this.removeAction = !this.removeAction;
+        console.log(this.removeAction);
+    }
+
     static convertSizeToCoord(position: THREE.Vector3): THREE.Vector3 {
-        position.divideScalar(Cube.SIZE);
+        position.divideScalar(Cube.Size);
         position.ceil();
 
         return position;
     }
 }
+
+// TOP : 4,5

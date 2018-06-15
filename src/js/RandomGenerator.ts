@@ -24,7 +24,7 @@ export default class RandomGenerator {
                         continue;
                     }
 
-                    const position = new THREE.Vector3(x, y, z).multiplyScalar(Cube.SIZE);
+                    const position = new THREE.Vector3(x, y, z).multiplyScalar(Cube.Size);
                     cubes[y][x][z] = this.addCube(position);
                 }
             }

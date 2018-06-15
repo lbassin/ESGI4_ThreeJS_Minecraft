@@ -1,8 +1,12 @@
 import * as THREE from "three";
 
+const topImage = require('../img/top.png');
+const sideImage = require('../img/side.png');
+const bottomImage = require('../img/bottom.png');
+
 export default class Cube {
 
-    static SIZE = 3;
+    static Size = 3;
     static TopColor = 0xa1d991;
     static SideColor = 0X80583c;
 
@@ -10,12 +14,12 @@ export default class Cube {
     static SideColorSelected = 0xff0000;
 
     static DefaultMaterial = [
-        new THREE.MeshBasicMaterial({color: Cube.SideColor}),
-        new THREE.MeshBasicMaterial({color: Cube.SideColor}),
-        new THREE.MeshPhongMaterial({color: Cube.TopColor}),
-        new THREE.MeshBasicMaterial({color: Cube.SideColor}),
-        new THREE.MeshBasicMaterial({color: Cube.SideColor}),
-        new THREE.MeshBasicMaterial({color: Cube.SideColor}),
+        new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(sideImage)}),
+        new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(sideImage)}),
+        new THREE.MeshPhongMaterial({map: new THREE.TextureLoader().load(topImage)}),
+        new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(bottomImage)}),
+        new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(sideImage)}),
+        new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load(sideImage)}),
     ];
 
     static SelectedMaterial = [
@@ -28,11 +32,10 @@ export default class Cube {
     ];
 
     private material: any;
-
-    object: any;
+    private object: any;
 
     constructor(position) {
-        const geometry = new THREE.BoxGeometry(Cube.SIZE, Cube.SIZE, Cube.SIZE);
+        const geometry = new THREE.BoxGeometry(Cube.Size, Cube.Size, Cube.Size);
 
 
         const cube = new THREE.Mesh(geometry, this.material);
@@ -46,6 +49,11 @@ export default class Cube {
 
     getObject() {
         return this.object;
+    }
+
+    select() {
+        this.object.material = Cube.SelectedMaterial;
+        return this;
     }
 
 }

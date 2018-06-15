@@ -8,6 +8,7 @@
     "build": "webpack -p --progress --env.prod"
   },
   "devDependencies": {
+    "@types/node": "^10.3.3",
     "autoprefixer": "^8.2.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",

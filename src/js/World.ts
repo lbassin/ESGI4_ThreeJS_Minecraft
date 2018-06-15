@@ -214,20 +214,6 @@ export default class World {
         }
     }
 
-    // updatePreviewNewCubePosition(): void {
-    //     if (!this.selectedCube) {
-    //         return;
-    //     }
-    //
-    //     this.previewNewCube.position.copy(this.selectedCube.position);
-    //     if (this.selectedFace == 4 || this.selectedFace == 5) {
-    //         this.previewNewCube.position.y += Cube.Size;
-    //     }
-    //     if (this.selectedFace == 2 || this.selectedFace == 3) {
-    //         this.previewNewCube.position.x += Cube.Size;
-    //     }
-    // }
-
     setPlayerHeight() {
         const height = this.getHighestY() * Cube.Size;
 
@@ -280,7 +266,6 @@ export default class World {
 
     changeAction(): void {
         this.removeAction = !this.removeAction;
-        console.log(this.removeAction);
     }
 
     static convertSizeToCoord(position: THREE.Vector3): THREE.Vector3 {

@@ -6,32 +6,29 @@ export default class FlatGenerator {
     scene: any;
 
     sizeX = 50;
-    sizeZ = 50;
-    sizeY = 1;
+    sizeZ = 30;
+    sizeY = 30;
 
     generate(world) {
         this.scene = world.scene;
 
         const cubes = [];
-        for (let y = 0; y < 1; y++) {
+        for (let y = 0; y < this.sizeY; y++) {
             cubes[y] = [];
             for (let x = 0; x < this.sizeX; x++) {
                 cubes[y][x] = [];
                 for (let z = 0; z < this.sizeZ; z++) {
                     cubes[y][x][z] = null;
 
+                    if (y >= 1) {
+                        continue;
+                    }
+
                     const position = new THREE.Vector3(x, y, z).multiplyScalar(Cube.Size);
                     cubes[y][x][z] = this.addCube(position);
                 }
             }
         }
-
-        // Debug
-        const position = new THREE.Vector3(2,1,2).multiplyScalar(Cube.Size);
-        cubes[1] = [];
-        cubes[1][2] = [];
-        cubes[1][2][2] = this.addCube(position);
-        // / Debug
 
         world.cubes = cubes;
     }

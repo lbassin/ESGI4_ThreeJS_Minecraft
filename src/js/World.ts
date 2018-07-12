@@ -5,10 +5,10 @@ import * as Stats from 'stats.js';
 import FlatGenerator from './FlatGenerator';
 import 'three/examples/js/shaders/CopyShader';
 import 'three/examples/js/postprocessing/EffectComposer';
-import 'three/examples/js/postprocessing/RenderPass';
 import 'three/examples/js/postprocessing/ShaderPass';
-import 'three/examples/js/postprocessing/SavePass';
-import 'three/examples/js/postprocessing/DotScreenPass';
+import 'three/examples/js/postprocessing/RenderPass';
+import 'three/examples/js/postprocessing/FilmPass';
+import 'three/examples/js/shaders/FilmShader';
 
 const viewDistance = 100;
 const fov = 60;
@@ -140,9 +140,14 @@ export default class World {
 
     initShader() {
         let renderPass = new THREE.RenderPass(this.scene, this.camera);
-        renderPass.renderToScreen = true;
+
+        // noiseIntensity, scanlinesIntensity, scanlinesCount, grayscale
+        let effectFilm = new THREE.FilmPass(0.7, 0.2, 512, 1);
+        effectFilm.renderToScreen = true;
 
         this.composer.addPass(renderPass);
+        this.composer.addPass(effectFilm);
+
     }
 
     animate() {

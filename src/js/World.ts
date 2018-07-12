@@ -5,8 +5,8 @@ import * as Stats from 'stats.js';
 import FlatGenerator from './FlatGenerator';
 import 'three/examples/js/shaders/CopyShader';
 import 'three/examples/js/postprocessing/EffectComposer';
-import 'three/examples/js/postprocessing/ShaderPass';
 import 'three/examples/js/postprocessing/RenderPass';
+import 'three/examples/js/postprocessing/ShaderPass';
 import 'three/examples/js/postprocessing/FilmPass';
 import 'three/examples/js/shaders/FilmShader';
 
@@ -20,7 +20,6 @@ export default class World {
     scene: any;
     camera: any;
     renderer: any;
-    renderPass: any;
     composer: any;
     generator: any;
     controls: any;
@@ -50,8 +49,6 @@ export default class World {
         this.renderer.shadowMap.type = THREE.BasicShadowMap;
         this.composer = new THREE.EffectComposer(this.renderer);
 
-        this.initShader();
-
         this.generator = new FlatGenerator();
 
         this.stats = new Stats();
@@ -78,6 +75,8 @@ export default class World {
         this.initKeyboard();
         this.initMouse();
         this.initRaycaster();
+
+        this.initShader();
     }
 
     initCamera() {
@@ -140,8 +139,6 @@ export default class World {
 
     initShader() {
         let renderPass = new THREE.RenderPass(this.scene, this.camera);
-
-        // noiseIntensity, scanlinesIntensity, scanlinesCount, grayscale
         let effectFilm = new THREE.FilmPass(0.7, 0.2, 512, 1);
         effectFilm.renderToScreen = true;
 

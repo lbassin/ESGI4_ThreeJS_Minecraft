@@ -3,6 +3,12 @@ import 'three/examples/js/controls/PointerLockControls';
 import Cube from './Cube';
 import * as Stats from 'stats.js';
 import FlatGenerator from './FlatGenerator';
+import 'three/examples/js/shaders/CopyShader';
+import 'three/examples/js/postprocessing/EffectComposer';
+import 'three/examples/js/postprocessing/RenderPass';
+import 'three/examples/js/postprocessing/ShaderPass';
+import 'three/examples/js/postprocessing/SavePass';
+import 'three/examples/js/postprocessing/DotScreenPass';
 
 const viewDistance = 100;
 const fov = 60;
@@ -14,6 +20,8 @@ export default class World {
     scene: any;
     camera: any;
     renderer: any;
+    renderPass: any;
+    composer: any;
     generator: any;
     controls: any;
     ambientLight: any;
@@ -26,7 +34,6 @@ export default class World {
 
     selectedCube: THREE.Mesh = null;
     selectedFace: number = null;
-    previewNewCube: THREE.Mesh = null;
 
     stats: any;
 
@@ -41,6 +48,9 @@ export default class World {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.BasicShadowMap;
+        this.composer = new THREE.EffectComposer(this.renderer);
+
+        this.initShader();
 
         this.generator = new FlatGenerator();
 
@@ -128,6 +138,13 @@ export default class World {
         this.raycaster.far = raycasterFar;
     }
 
+    initShader() {
+        let renderPass = new THREE.RenderPass(this.scene, this.camera);
+        renderPass.renderToScreen = true;
+
+        this.composer.addPass(renderPass);
+    }
+
     animate() {
         this.stats.begin();
 
@@ -136,7 +153,8 @@ export default class World {
 
         this.setPlayerHeight();
 
-        this.renderer.render(this.scene, this.camera);
+        // this.renderer.render(this.scene, this.camera);
+        this.composer.render();
         this.stats.end();
         requestAnimationFrame(this.animate.bind(this));
     }
